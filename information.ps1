@@ -37,6 +37,12 @@ Where IPAddress -NE $null
 #Creating IP adresses and MAC adresses objects
 $adresssesHtml = $adresses | ConvertTo-Html -Fragment -PreContent "<h2>IP and MAC Adresses</h2>"
 
+#Get useless services
+$UselessServices = Get-Service -Name "diagnosticshub*", "DiagTrack", "dmwappush*", "lfsvc", "RetailDemo", "WbioSrvc", "Xbl*", "Xbox*", "MapsBroker", "TabletInputService" |Select Name, Status, DisplayName |Sort-Object Name
+
+#Creating useless services objects
+$UselessServicesHtml = $UselessServices | ConvertTo-Html -Fragment -PreContent "<h2>Useless services</h2>"
+
 #Creating Computer object
 $computerProps = @{
 	'Name'= $env:computername;
@@ -59,35 +65,35 @@ $head = @"
 	<title>Computer Report</title>
 	<style>
 		body {
-			background-color: #282A36;
-			font-family: sans-serif;
+			background-color: #EDF6FA;
+			font-family: monospace;
 		}
 		h1 {
-			color: #FF7575;
+			color: #1AB6E6;
 		}
 		h2 {
-			color: #E56969;
+			color: #1AB6E6;
 		}
 		table {
-			background-color: #363949;
+			background-color: #D1D9DB;
             border-collapse: collapse;
 		}
 		td {
-			border: 2px solid #282A36;
-			background-color: #363949;
-			color: #FF7575;
+			border: 2px solid #EEEEEE;
+			background-color: #D1D9DB;
+			color: #1AB6E6;
 			padding: 5px;
 		}
 		th {
-			border: 2px solid #282A36;
-			background-color: #363949;
-			color: #FF7575;
+			border: 2px solid #EEEEEE;
+			background-color: #1AB6E6;
+			color: #FFFFFF;
 			text-align: left;
 			padding: 5px;
 		}
 	</style>
 "@
 # Output to file
-ConvertTo-Html -Head $head -Body "$computerHtml $adresssesHtml" | Out-File $reportPath
+ConvertTo-Html -Head $head -Body "$computerHtml $adresssesHtml $UselessServicesHtml" | Out-File $reportPath
 
 
