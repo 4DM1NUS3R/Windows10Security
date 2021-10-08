@@ -38,7 +38,7 @@ Where IPAddress -NE $null
 $adresssesHtml = $adresses | ConvertTo-Html -Fragment -PreContent "<h2>Adresses IP et adresses MAC</h2>"
 
 #Get useless services
-$UselessServices = Get-Service -Name "ScardSvr","PcaSvc","NetTcpPortSharing", "WerSvc","WdiServiceHost","RasAuto","SharedAccess","TapiSrv", "WMPNetworkSvc", "DPS", "SCPolicySvc","seclogon", "diagnosticshub*", "DiagTrack", "dmwappush*", "lfsvc", "RetailDemo", "WbioSrvc", "Xbl*", "Xbox*", "MapsBroker", "TabletInputService" |Select Name, Status, DisplayName |Sort-Object Name
+$UselessServices = Get-Service -Name "ScardSvr","PcaSvc","NetTcpPortSharing", "WerSvc","WdiServiceHost","SharedAccess","TapiSrv", "WMPNetworkSvc", "DPS", "SCPolicySvc", "diagnosticshub*", "DiagTrack", "dmwappush*", "lfsvc", "RetailDemo", "WbioSrvc", "Xbl*", "Xbox*", "MapsBroker", "TabletInputService" |Select Name, Status, DisplayName |Sort-Object Name
 
 #Creating useless services objects
 $UselessServicesHtml = $UselessServices | ConvertTo-Html -Fragment -PreContent "<h2>Services inutiles</h2>"
