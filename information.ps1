@@ -35,13 +35,13 @@ Name = 'IPAddress'
 Where IPAddress -NE $null
 
 #Creating IP adresses and MAC adresses objects
-$adresssesHtml = $adresses | ConvertTo-Html -Fragment -PreContent "<h2>IP and MAC Adresses</h2>"
+$adresssesHtml = $adresses | ConvertTo-Html -Fragment -PreContent "<h2>Adresses IP et adresses MAC</h2>"
 
 #Get useless services
-$UselessServices = Get-Service -Name "diagnosticshub*", "DiagTrack", "dmwappush*", "lfsvc", "RetailDemo", "WbioSrvc", "Xbl*", "Xbox*", "MapsBroker", "TabletInputService" |Select Name, Status, DisplayName |Sort-Object Name
+$UselessServices = Get-Service -Name "ScardSvr","PcaSvc","NetTcpPortSharing", "WerSvc","WdiServiceHost","RasAuto","SharedAccess","TapiSrv", "WMPNetworkSvc", "DPS", "SCPolicySvc","seclogon", "diagnosticshub*", "DiagTrack", "dmwappush*", "lfsvc", "RetailDemo", "WbioSrvc", "Xbl*", "Xbox*", "MapsBroker", "TabletInputService" |Select Name, Status, DisplayName |Sort-Object Name
 
 #Creating useless services objects
-$UselessServicesHtml = $UselessServices | ConvertTo-Html -Fragment -PreContent "<h2>Useless services</h2>"
+$UselessServicesHtml = $UselessServices | ConvertTo-Html -Fragment -PreContent "<h2>Services inutiles</h2>"
 
 #Creating Computer object
 $computerProps = @{
@@ -57,15 +57,15 @@ $computerProps = @{
 	'Last Boot'= $LastBootTime.lastbootuptime
 }
 $computer = New-Object -TypeName PSObject -Prop $computerProps
-$computerHtml = $computer | ConvertTo-Html -Fragment -PreContent "<h1>Computer Report </h1><h2>General Informations</h2>"
+$computerHtml = $computer | ConvertTo-Html -Fragment -PreContent "<h1>Rapport d'audit de sécurité Windows 10 </h1><h2>Informations générales</h2>"
 
 
 # Create HTML file
 $head = @"
-	<title>Computer Report</title>
+	<title>Rapport d'audit </title>
 	<style>
 		body {
-			background-color: #EDF6FA;
+			background-color: #F7FAFC;
 			font-family: monospace;
 		}
 		h1 {
