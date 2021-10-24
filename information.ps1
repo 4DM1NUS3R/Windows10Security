@@ -37,7 +37,7 @@ Name = 'IPAddress'
 Where IPAddress -NE $null
 
 #Creating IP adresses and MAC adresses objects
-$adresssesHtml = $adresses | ConvertTo-Html -Fragment
+$adresssesHtml = $adresses | ConvertTo-Html -Fragment -PreContent "<h2>Adresses IP et adresses MAC</h2>"
 
 #Creating Computer object
 $computerProps = @{
@@ -53,8 +53,7 @@ $computerProps = @{
 	'Last Boot'= $LastBootTime.lastbootuptime
 }
 $computer = New-Object -TypeName PSObject -Prop $computerProps
-$computerHtml = $computer | ConvertTo-Html -Fragment
-
+$computerHtml = $computer | ConvertTo-Html -Fragment -PreContent "<h1>Rapport d'audit de sécurité Windows 10 </h1><h2>Informations générales</h2>"
 
 ############################# Display information about local accounts #############################
 
@@ -68,13 +67,12 @@ foreach($user in Get-LocalUser){
 }
 #convert array to html tables 
 $localUserData | ForEach-Object {$localUserDataHtml += $PSItem | ConvertTo-Html -Fragment -PostContent "<a><br></a>"}
-$computerHtml = $computer | ConvertTo-Html -Fragment -PreContent "<h1>Rapport d'audit de sécurité Windows 10 </h1><h2>Informations générales</h2>"
-
 
 ############################# Getting private life properties #############################
 #The try catch methode was used for some parameters because for some of them, the property causes an error when the parameter is activated.
 
 #Advertising Info
+$NameAdInfo = "Advertising ID"
 $StateAdInfo = Get-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo | Select-Object -ExpandProperty Enabled
 
 if($StateAdInfo -eq 1){
@@ -85,9 +83,10 @@ else {
     }
 
 
+
 #Creation of hash table containing all name and status about parameters
 $hash = @{}
-$hash.Add($arrayAdInfo[0], $StateAdInfo)
+$hash.Add($NameAdInfo, $StateAdInfo)
 
 #Location
 $NameLocation = "Location"
@@ -194,6 +193,7 @@ $UselessServicesHtml = $UselessServices | ConvertTo-Html -Fragment -PreContent "
 $head = @"
 	<title>Rapport d'audit </title>
 	<style>
+ 
 		body {
 			background-color: #F7FAFC;
 			font-family: monospace;
@@ -209,33 +209,25 @@ $head = @"
             border-collapse: collapse;
 		}
 		td {
-			border: 2px solid #21222c;
-			background-color: #363949;
-			color: #FF7575;
+			border: 2px solid #EEEEEE;
+			background-color: #D1D9DB;
+			color: #1AB6E6;
 			padding: 5px;
 		}
 		th {
-			border: 2px solid #21222c;
-			background-color: #16171d;
-			color: #FF7575;
+			border: 2px solid #EEEEEE;
+			background-color: #1AB6E6;
+			color: #FFFFFF;
 			text-align: left;
 			padding: 5px;
-		}
-		div.localUsersData table {
-			width: 100%;
 		}
 	</style>
 "@
 
 # Output to file
-ConvertTo-Html -Head $head -Body "<h1>Computer Report </h1><h2>General Informations</h2>
-									$computerHtml 
-									<h2>IP and MAC Adresses</h2>
-									$adresssesHtml 
-									<div class=`"localUsersData`">
+ConvertTo-Html -Head $head -Body "$computerHtml $adresssesHtml <div class=`"localUsersData`">
 										<h2>Local user informations</h2>
 										$localUserDataHtml
-									</div>" | Out-File $reportPath
+									</div> $PrivacyParametersHtml $camerasHtml $microphoneHtml $UselessServicesHtml" | Out-File $reportPath
 
-Invoke-Expression ./report.html
 
