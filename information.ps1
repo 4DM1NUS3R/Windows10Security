@@ -60,30 +60,18 @@ $computerHtml = $computer | ConvertTo-Html -Fragment -PreContent "<h1>Rapport d'
 
 
 ############################# Getting private life properties #############################
+#The try catch methode was used for some parameters because for some of them, the property causes an error when the parameter is activated.
 
-function GetAdInfo ($path){
-$array = @()
-$Property= Get-Item -Path $path | Select-Object -ExpandProperty Property
-$Name=Get-Item -Path $path | Select-Object -ExpandProperty PSChildName
-
-$Advertise= Get-Item -Path $path
-
-$dataProperty=$Advertise.GetValue("Enabled")
-
-$array += $Name
-$array += $Property
-$array += $dataProperty
-
-return $array
-}
 #Advertising Info
-$arrayAdInfo = GetAdInfo("HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo")
-if($arrayAdInfo[1]="Enabled"){
+$StateAdInfo = Get-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo | Select-Object -ExpandProperty Enabled
+
+if($StateAdInfo -eq 1){
     $StateAdInfo = "Le paramètre est activé"
 }    
 else {
-        $StateLocation = "Le paramètre est désactivé"
+        $StateAdInfo = "Le paramètre est désactivé"
     }
+
 
 #Creation of hash table containing all name and status about parameters
 $hash = @{}
@@ -93,7 +81,7 @@ $hash.Add($arrayAdInfo[0], $StateAdInfo)
 $NameLocation = "Location"
 $StateLocation = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}" -Name "SensorPermissionState" | select-object -ExpandProperty SensorPermissionState
 
-if($StateLocation = 1){
+if($StateLocation -eq 1){
     $StateLocation = "Le paramètre est activé"
     }
     else {
@@ -105,7 +93,7 @@ $hash.Add($NameLocation, $StateLocation)
 #Tracking
 $NameDiagTrack = "DiagTrack"
 $StateDiagTrack = Get-service DiagTrack | Select-Object -ExpandProperty Status
-if($StateDiagTrack = "Running"){
+if($StateDiagTrack -eq "Running"){
     $StateDiagTrack = "Le paramètre est activé"
     }
     else {
@@ -149,7 +137,7 @@ $hash.Add($NameP2P, $StateP2P)
 #Cortana
 $NameCortana = "Cortana"
 $StateCortana = Get-ItemProperty -Path HKCU:\Software\Microsoft\Personalization\Settings | Select-Object -ExpandProperty AcceptedPrivacyPolicy
-if($StateCortana = 1){
+if($StateCortana -eq 1){
     $StateCortana = "Le paramètre est activé"
     }
     else {
@@ -169,13 +157,19 @@ if($Version -lt "1709"){
 
 $hash.Add($NameWifiSense, $StateWifiSense)
 
-#Caméra
-#Get-PnpDevice -FriendlyName *webcam* -Class Camera,image
+#Caméras
+$cameras = Get-PnpDevice -FriendlyName *webcam* -Class Camera,image | Select-Object Class, FriendlyName, Description, Status
+
+#Microphones
+$microphone = Get-PnpDevice -FriendlyName *microphone* -Class AudioEndpoint | Select-Object Class, FriendlyName, Description, Status
 
 #Creating privacy parameters object
 $PrivacyParametersHtml = [pscustomobject]$hash | ConvertTo-Html -Fragment -PreContent "<h2>Status des paramètres de la vie privée</h2>"
+$camerasHtml = $cameras | ConvertTo-Html -Fragment -PreContent "<h2>Cameras</h2>"
+$microphoneHtml = $microphone | ConvertTo-Html -Fragment -PreContent "<h2>Microphones</h2>"
 
 ############################# Display useless services #############################
+#Thoses services where determinated according to the recommendations of the ANSSI, and assuming that this audit was running on human resources employee. 
 
 #Get useless services
 $UselessServices = Get-Service -Name "ScardSvr","PcaSvc","NetTcpPortSharing", "WerSvc","WdiServiceHost","SharedAccess","TapiSrv", "WMPNetworkSvc", "DPS", "SCPolicySvc", "diagnosticshub*", "DiagTrack", "dmwappush*", "lfsvc", "RetailDemo", "WbioSrvc", "Xbl*", "Xbox*", "MapsBroker", "TabletInputService" |Select Name, Status, DisplayName |Sort-Object Name
@@ -219,6 +213,6 @@ $head = @"
 "@
 
 # Output to file
-ConvertTo-Html -Head $head -Body "$computerHtml $adresssesHtml $PrivacyParametersHtml $UselessServicesHtml" | Out-File $reportPath
+ConvertTo-Html -Head $head -Body "$computerHtml $adresssesHtml $PrivacyParametersHtml $camerasHtml $microphoneHtml $UselessServicesHtml" | Out-File $reportPath
 
 
