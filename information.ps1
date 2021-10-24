@@ -35,7 +35,7 @@ Name = 'IPAddress'
 Where IPAddress -NE $null
 
 #Creating IP adresses and MAC adresses objects
-$adresssesHtml = $adresses | ConvertTo-Html -Fragment -PreContent "<h2>IP and MAC Adresses</h2>"
+$adresssesHtml = $adresses | ConvertTo-Html -Fragment
 
 #Creating Computer object
 $computerProps = @{
@@ -51,7 +51,19 @@ $computerProps = @{
 	'Last Boot'= $LastBootTime.lastbootuptime
 }
 $computer = New-Object -TypeName PSObject -Prop $computerProps
-$computerHtml = $computer | ConvertTo-Html -Fragment -PreContent "<h1>Computer Report </h1><h2>General Informations</h2>"
+$computerHtml = $computer | ConvertTo-Html -Fragment
+
+#create user informations as array of objetcs containing informations
+$localUserData = @()
+$localUserDataHtml = @()
+foreach($user in Get-LocalUser){
+    $localUserData += $user | Select-Object Name,FullName,SID,LastLogon,PasswordExpire,PasswordLastSet,PasswordChangeableDate,AccountExpires,Enabled
+    #Write-Host "File permissions :`n"
+    #.\accesschk.exe $user c:\* -s
+}
+
+#convert array to html tables 
+$localUserData | ForEach-Object {$localUserDataHtml += $PSItem | ConvertTo-Html -Fragment -PostContent "<a><br></a>"}
 
 
 # Create HTML file
@@ -73,21 +85,32 @@ $head = @"
             border-collapse: collapse;
 		}
 		td {
-			border: 2px solid #282A36;
+			border: 2px solid #21222c;
 			background-color: #363949;
 			color: #FF7575;
 			padding: 5px;
 		}
 		th {
-			border: 2px solid #282A36;
-			background-color: #363949;
+			border: 2px solid #21222c;
+			background-color: #16171d;
 			color: #FF7575;
 			text-align: left;
 			padding: 5px;
 		}
+		div.localUsersData table {
+			width: 100%;
+		}
 	</style>
 "@
 # Output to file
-ConvertTo-Html -Head $head -Body "$computerHtml $adresssesHtml" | Out-File $reportPath
+ConvertTo-Html -Head $head -Body "<h1>Computer Report </h1><h2>General Informations</h2>
+									$computerHtml 
+									<h2>IP and MAC Adresses</h2>
+									$adresssesHtml 
+									<div class=`"localUsersData`">
+										<h2>Local user informations</h2>
+										$localUserDataHtml
+									</div>" | Out-File $reportPath
 
+Invoke-Expression ./report.html
 
