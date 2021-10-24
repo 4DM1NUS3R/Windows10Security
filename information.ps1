@@ -169,7 +169,7 @@ if($Version -lt "1709"){
 $hash.Add($NameWifiSense, $StateWifiSense)
 
 #Caméras
-$cameras = Get-PnpDevice -FriendlyName *webcam* -Class Camera,image | Select-Object Class, FriendlyName, Description, Status
+$cameras = Get-PnpDevice  -Class Camera | Select-Object Class, FriendlyName, Description, Status
 
 #Microphones
 $microphone = Get-PnpDevice -FriendlyName *microphone* -Class AudioEndpoint | Select-Object Class, FriendlyName, Description, Status
@@ -221,13 +221,21 @@ $head = @"
 			text-align: left;
 			padding: 5px;
 		}
+		div.localUsersData table {
+			width: 100%;
+		}
 	</style>
 "@
 
 # Output to file
-ConvertTo-Html -Head $head -Body "$computerHtml $adresssesHtml <div class=`"localUsersData`">
+ConvertTo-Html -Head $head -Body "$computerHtml $adresssesHtml 
+									<div class=`"localUsersData`">
 										<h2>Local user informations</h2>
 										$localUserDataHtml
-									</div> $PrivacyParametersHtml $camerasHtml $microphoneHtml $UselessServicesHtml" | Out-File $reportPath
+									</div> 
+									$PrivacyParametersHtml 
+									$camerasHtml 
+									$microphoneHtml 
+									$UselessServicesHtml" | Out-File $reportPath
 
 
